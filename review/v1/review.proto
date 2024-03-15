@@ -130,14 +130,14 @@ message AuditAppealReply{
 //ListReviewByStoreID 
 message ListReviewByStoreIDRequest {
 	int64 storeID = 1 [(validate.rules).int64 = {gt: 0}];
-	int32 page = 2 [(validate.rules).int32 = {gt:0}];
-	int32 size = 3 [(validate.rules).int32 = {gt:0}];
+	int32 page = 2 [(validate.rules).int64 = {gt: 0}];
+	int32 size = 3 [(validate.rules).int64 = {gt: 0}];
 }
 
-//ListReviewByStoreIDReply 
 message ListReviewByStoreIDReply {
 	repeated ReviewInfo list = 1;
 }
+
 
 // 评价信息
 message ReviewInfo{
