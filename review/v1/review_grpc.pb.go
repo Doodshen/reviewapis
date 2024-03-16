@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	Review_CreateReview_FullMethodName        = "/api.review.v1.Review/CreateReview"
 	Review_GetReview_FullMethodName           = "/api.review.v1.Review/GetReview"
+	Review_ListReviewByUserID_FullMethodName  = "/api.review.v1.Review/ListReviewByUserID"
 	Review_ReplyReview_FullMethodName         = "/api.review.v1.Review/ReplyReview"
 	Review_AppealReview_FullMethodName        = "/api.review.v1.Review/AppealReview"
 	Review_AuditAppeal_FullMethodName         = "/api.review.v1.Review/AuditAppeal"
@@ -35,6 +36,8 @@ type ReviewClient interface {
 	CreateReview(ctx context.Context, in *CreateReviewRequest, opts ...grpc.CallOption) (*CreateReviewReply, error)
 	// C端获取评价详情
 	GetReview(ctx context.Context, in *GetReviewRequest, opts ...grpc.CallOption) (*GetReviewReply, error)
+	// C端查看userID下所有评价
+	ListReviewByUserID(ctx context.Context, in *ListReviewByUserIDRequest, opts ...grpc.CallOption) (*ListReviewByUserIDReply, error)
 	// B端回复评价
 	ReplyReview(ctx context.Context, in *ReplyReviewRequest, opts ...grpc.CallOption) (*ReplyReviewReply, error)
 	// B端申述评价
@@ -65,6 +68,15 @@ func (c *reviewClient) CreateReview(ctx context.Context, in *CreateReviewRequest
 func (c *reviewClient) GetReview(ctx context.Context, in *GetReviewRequest, opts ...grpc.CallOption) (*GetReviewReply, error) {
 	out := new(GetReviewReply)
 	err := c.cc.Invoke(ctx, Review_GetReview_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *reviewClient) ListReviewByUserID(ctx context.Context, in *ListReviewByUserIDRequest, opts ...grpc.CallOption) (*ListReviewByUserIDReply, error) {
+	out := new(ListReviewByUserIDReply)
+	err := c.cc.Invoke(ctx, Review_ListReviewByUserID_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -115,6 +127,8 @@ type ReviewServer interface {
 	CreateReview(context.Context, *CreateReviewRequest) (*CreateReviewReply, error)
 	// C端获取评价详情
 	GetReview(context.Context, *GetReviewRequest) (*GetReviewReply, error)
+	// C端查看userID下所有评价
+	ListReviewByUserID(context.Context, *ListReviewByUserIDRequest) (*ListReviewByUserIDReply, error)
 	// B端回复评价
 	ReplyReview(context.Context, *ReplyReviewRequest) (*ReplyReviewReply, error)
 	// B端申述评价
@@ -135,6 +149,9 @@ func (UnimplementedReviewServer) CreateReview(context.Context, *CreateReviewRequ
 }
 func (UnimplementedReviewServer) GetReview(context.Context, *GetReviewRequest) (*GetReviewReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetReview not implemented")
+}
+func (UnimplementedReviewServer) ListReviewByUserID(context.Context, *ListReviewByUserIDRequest) (*ListReviewByUserIDReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListReviewByUserID not implemented")
 }
 func (UnimplementedReviewServer) ReplyReview(context.Context, *ReplyReviewRequest) (*ReplyReviewReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReplyReview not implemented")
@@ -193,6 +210,24 @@ func _Review_GetReview_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ReviewServer).GetReview(ctx, req.(*GetReviewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Review_ListReviewByUserID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListReviewByUserIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReviewServer).ListReviewByUserID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Review_ListReviewByUserID_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReviewServer).ListReviewByUserID(ctx, req.(*ListReviewByUserIDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -283,6 +318,10 @@ var Review_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetReview",
 			Handler:    _Review_GetReview_Handler,
+		},
+		{
+			MethodName: "ListReviewByUserID",
+			Handler:    _Review_ListReviewByUserID_Handler,
 		},
 		{
 			MethodName: "ReplyReview",
