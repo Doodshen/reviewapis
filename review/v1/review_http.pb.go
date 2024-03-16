@@ -21,6 +21,7 @@ const _ = http.SupportPackageIsVersion1
 
 const OperationReviewAppealReview = "/api.review.v1.Review/AppealReview"
 const OperationReviewAuditAppeal = "/api.review.v1.Review/AuditAppeal"
+const OperationReviewAuditReview = "/api.review.v1.Review/AuditReview"
 const OperationReviewCreateReview = "/api.review.v1.Review/CreateReview"
 const OperationReviewGetReview = "/api.review.v1.Review/GetReview"
 const OperationReviewListReviewByUserID = "/api.review.v1.Review/ListReviewByUserID"
@@ -31,6 +32,8 @@ type ReviewHTTPServer interface {
 	AppealReview(context.Context, *AppealReviewRequest) (*AppealReviewReply, error)
 	// AuditAppealo端审核评价申述
 	AuditAppeal(context.Context, *AuditAppealRequest) (*AuditAppealReply, error)
+	// AuditReviewO端审核评价
+	AuditReview(context.Context, *AuditReviewRequest) (*AuditReviewReply, error)
 	// CreateReview C端创建评价
 	CreateReview(context.Context, *CreateReviewRequest) (*CreateReviewReply, error)
 	// GetReviewC端获取评价详情
@@ -48,6 +51,7 @@ func RegisterReviewHTTPServer(s *http.Server, srv ReviewHTTPServer) {
 	r.GET("/v1/{userID}/reviews", _Review_ListReviewByUserID0_HTTP_Handler(srv))
 	r.POST("/v1/review/reply", _Review_ReplyReview0_HTTP_Handler(srv))
 	r.POST("/v1/review/appeal", _Review_AppealReview0_HTTP_Handler(srv))
+	r.POST("/v1/review/audit", _Review_AuditReview0_HTTP_Handler(srv))
 	r.POST("/v1/appeal/audit", _Review_AuditAppeal0_HTTP_Handler(srv))
 }
 
@@ -161,6 +165,28 @@ func _Review_AppealReview0_HTTP_Handler(srv ReviewHTTPServer) func(ctx http.Cont
 	}
 }
 
+func _Review_AuditReview0_HTTP_Handler(srv ReviewHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in AuditReviewRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationReviewAuditReview)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.AuditReview(ctx, req.(*AuditReviewRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*AuditReviewReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 func _Review_AuditAppeal0_HTTP_Handler(srv ReviewHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in AuditAppealRequest
@@ -186,6 +212,7 @@ func _Review_AuditAppeal0_HTTP_Handler(srv ReviewHTTPServer) func(ctx http.Conte
 type ReviewHTTPClient interface {
 	AppealReview(ctx context.Context, req *AppealReviewRequest, opts ...http.CallOption) (rsp *AppealReviewReply, err error)
 	AuditAppeal(ctx context.Context, req *AuditAppealRequest, opts ...http.CallOption) (rsp *AuditAppealReply, err error)
+	AuditReview(ctx context.Context, req *AuditReviewRequest, opts ...http.CallOption) (rsp *AuditReviewReply, err error)
 	CreateReview(ctx context.Context, req *CreateReviewRequest, opts ...http.CallOption) (rsp *CreateReviewReply, err error)
 	GetReview(ctx context.Context, req *GetReviewRequest, opts ...http.CallOption) (rsp *GetReviewReply, err error)
 	ListReviewByUserID(ctx context.Context, req *ListReviewByUserIDRequest, opts ...http.CallOption) (rsp *ListReviewByUserIDReply, err error)
@@ -218,6 +245,19 @@ func (c *ReviewHTTPClientImpl) AuditAppeal(ctx context.Context, in *AuditAppealR
 	pattern := "/v1/appeal/audit"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationReviewAuditAppeal))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *ReviewHTTPClientImpl) AuditReview(ctx context.Context, in *AuditReviewRequest, opts ...http.CallOption) (*AuditReviewReply, error) {
+	var out AuditReviewReply
+	pattern := "/v1/review/audit"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationReviewAuditReview))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

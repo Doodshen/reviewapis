@@ -24,6 +24,7 @@ const (
 	Review_ListReviewByUserID_FullMethodName  = "/api.review.v1.Review/ListReviewByUserID"
 	Review_ReplyReview_FullMethodName         = "/api.review.v1.Review/ReplyReview"
 	Review_AppealReview_FullMethodName        = "/api.review.v1.Review/AppealReview"
+	Review_AuditReview_FullMethodName         = "/api.review.v1.Review/AuditReview"
 	Review_AuditAppeal_FullMethodName         = "/api.review.v1.Review/AuditAppeal"
 	Review_ListReviewByStoreID_FullMethodName = "/api.review.v1.Review/ListReviewByStoreID"
 )
@@ -42,6 +43,8 @@ type ReviewClient interface {
 	ReplyReview(ctx context.Context, in *ReplyReviewRequest, opts ...grpc.CallOption) (*ReplyReviewReply, error)
 	// B端申述评价
 	AppealReview(ctx context.Context, in *AppealReviewRequest, opts ...grpc.CallOption) (*AppealReviewReply, error)
+	// O端审核评价
+	AuditReview(ctx context.Context, in *AuditReviewRequest, opts ...grpc.CallOption) (*AuditReviewReply, error)
 	// o端审核评价申述
 	AuditAppeal(ctx context.Context, in *AuditAppealRequest, opts ...grpc.CallOption) (*AuditAppealReply, error)
 	// 根据商家ID查询评价列表（分页 ）
@@ -101,6 +104,15 @@ func (c *reviewClient) AppealReview(ctx context.Context, in *AppealReviewRequest
 	return out, nil
 }
 
+func (c *reviewClient) AuditReview(ctx context.Context, in *AuditReviewRequest, opts ...grpc.CallOption) (*AuditReviewReply, error) {
+	out := new(AuditReviewReply)
+	err := c.cc.Invoke(ctx, Review_AuditReview_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *reviewClient) AuditAppeal(ctx context.Context, in *AuditAppealRequest, opts ...grpc.CallOption) (*AuditAppealReply, error) {
 	out := new(AuditAppealReply)
 	err := c.cc.Invoke(ctx, Review_AuditAppeal_FullMethodName, in, out, opts...)
@@ -133,6 +145,8 @@ type ReviewServer interface {
 	ReplyReview(context.Context, *ReplyReviewRequest) (*ReplyReviewReply, error)
 	// B端申述评价
 	AppealReview(context.Context, *AppealReviewRequest) (*AppealReviewReply, error)
+	// O端审核评价
+	AuditReview(context.Context, *AuditReviewRequest) (*AuditReviewReply, error)
 	// o端审核评价申述
 	AuditAppeal(context.Context, *AuditAppealRequest) (*AuditAppealReply, error)
 	// 根据商家ID查询评价列表（分页 ）
@@ -158,6 +172,9 @@ func (UnimplementedReviewServer) ReplyReview(context.Context, *ReplyReviewReques
 }
 func (UnimplementedReviewServer) AppealReview(context.Context, *AppealReviewRequest) (*AppealReviewReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AppealReview not implemented")
+}
+func (UnimplementedReviewServer) AuditReview(context.Context, *AuditReviewRequest) (*AuditReviewReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AuditReview not implemented")
 }
 func (UnimplementedReviewServer) AuditAppeal(context.Context, *AuditAppealRequest) (*AuditAppealReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuditAppeal not implemented")
@@ -268,6 +285,24 @@ func _Review_AppealReview_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Review_AuditReview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuditReviewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReviewServer).AuditReview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Review_AuditReview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReviewServer).AuditReview(ctx, req.(*AuditReviewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Review_AuditAppeal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AuditAppealRequest)
 	if err := dec(in); err != nil {
@@ -330,6 +365,10 @@ var Review_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AppealReview",
 			Handler:    _Review_AppealReview_Handler,
+		},
+		{
+			MethodName: "AuditReview",
+			Handler:    _Review_AuditReview_Handler,
 		},
 		{
 			MethodName: "AuditAppeal",
