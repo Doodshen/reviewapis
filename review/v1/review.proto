@@ -21,8 +21,7 @@ service Review {
 	//C端获取评价详情 
 	rpc GetReview(GetReviewRequest) returns (GetReviewReply){
 		option (google.api.http) = {
-			post: "/v1/review{reviewID}"
-			body: "*"
+			get: "/v1/review/{reviewID}"
 		};
 	}
 	
@@ -150,8 +149,8 @@ message AuditAppealReply{
 //ListReviewByStoreID 
 message ListReviewByStoreIDRequest {
 	int64 storeID = 1 [(validate.rules).int64 = {gt: 0}];
-	int32 page = 2 [(validate.rules).int64 = {gt: 0}];
-	int32 size = 3 [(validate.rules).int64 = {gt: 0}];
+	int32 page = 2 [(validate.rules).int32 = {gt: 0}];
+	int32 size = 3 [(validate.rules).int32 = {gt: 0}];
 }
 
 message ListReviewByStoreIDReply {
